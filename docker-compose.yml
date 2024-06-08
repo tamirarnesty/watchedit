@@ -1,0 +1,25 @@
+include:
+  - infra.yaml
+services:
+  api:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:example@postgres-db:5432/postgres
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: pipenv run fastapi run src/main.py
+    restart: always
+    develop:
+      watch:
+        - path: backend/src
+          action: sync
+          target: /app
+        - path: backend/Pipfile
+          action: rebuild
+    depends_on:
+      postgres-db:
+        condition: service_healthy
